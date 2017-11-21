@@ -7,7 +7,7 @@ from gpflow.params import Parameter
 from gpflow import transforms
 from fixphase import FixPhase
 from fixdelay import FixDelay
-from multikernel_test import MultiKern
+from multikernel import MultiKern
 
 #from gpflow._settings import settings
 #float_type = settings.dtypes.float_type
