@@ -18,7 +18,7 @@ class MultiKern(Kern):
     the observations into different cases and reorder the final kernel matrix appropriately.'''
     def __init__(self, input_dim, output_dim, active_dims=None, name=None):
         Kern.__init__(self, input_dim, active_dims, name)
-        self.groups = output_dim
+        self.output_dim = output_dim
    
     def subK(self, indexes, X, X2 = None):
         return NotImplementedError
@@ -40,9 +40,9 @@ class MultiKern(Kern):
 
         #construct kernel matrix for index-sorted data (stacked Xparts)
         blocks = []
-        for i in range(self.groups):
+        for i in range(self.output_dim):
             row_i = []
-            for j in range(self.groups):
+            for j in range(self.output_dim):
                 row_i.append(self.subK((i, j), Xparts[i], X2parts[j]))
             blocks.append(tf.concat(row_i, 1))
         Ksort = tf.concat(blocks, 0)
@@ -55,7 +55,7 @@ class MultiKern(Kern):
     def Kdiag(self, X):
         #X, _ = self._slice(X, None)
         Xindex = tf.cast(X[:, 0], tf.int32) #find recursion level indices
-        Xparts, Xsplitn, Freturn = self.splitback(X[:,1:], Xindex)
+        Xparts, Xsplitn, Freturn = self._splitback(X[:,1:], Xindex)
         
         subdiags = []
         for index, data in enumerate(Xparts):
@@ -66,11 +66,11 @@ class MultiKern(Kern):
     def _splitback(self, data, indices):
         '''applies dynamic_partioning and calculates necessary statistics for
         the inverse mapping.'''
-        parts = tf.dynamic_partition(data, indices, self.groups) #split data based on indices
+        parts = tf.dynamic_partition(data, indices, self.output_dim) #split data based on indices
 
         #to be able to invert the splitting, we need:
         splitnum = tf.stack([tf.shape(x)[0] for x in parts]) #the size of each data split
-        goback = tf.dynamic_partition(tf.range(tf.shape(data)[0]), indices, self.groups) #indices to invert dynamic_part
+        goback = tf.dynamic_partition(tf.range(tf.shape(data)[0]), indices, self.output_dim) #indices to invert dynamic_part
         return (parts, splitnum, goback)
 
     def _reconstruct(self, K, splitnum, goback):

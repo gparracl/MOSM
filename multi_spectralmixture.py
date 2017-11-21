@@ -13,39 +13,40 @@ from multikernel import MultiKern
 #float_type = settings.dtypes.float_type
    
 class MultiSpectralMixture(MultiKern):
-    def __init__(self, input_dim, groups, 
+    def __init__(self, input_dim, output_dim, 
                  spectral_constant = None, spectral_mean = None, 
                  spectral_variance = None, spectral_delay = None, 
                  spectral_phase = None, active_dims = None):
         
         #input_dim: Input Dimension as integer
-        #groups: Output Dimension as integer
+        #output_dim: Output Dimension as integer
         
-        #spectral_constant: tensor of rank 1 of length groups
-        #spectral_mean: tensor of rank 2 of shape (input_dim, groups)
-        #spectral_variance: tensor of rank 2 of shape (input_dim, groups)
-        #spectral_delay: tensor of rank 2 of shape (input_dim, groups)
-        #spectral_phase: tensor of rank 1 of length groups
+        #spectral_constant: tensor of rank 1 of length output_dim
+        #spectral_mean: tensor of rank 2 of shape (input_dim, output_dim)
+        #spectral_variance: tensor of rank 2 of shape (input_dim, output_dim)
+        #spectral_delay: tensor of rank 2 of shape (input_dim, output_dim)
+        #spectral_phase: tensor of rank 1 of length output_dim
         
+        #TODO: ADD AUTOMATIC INITIALIZATION
         if spectral_constant is None:
-            spectral_constant = np.random.randn(groups)
+            spectral_constant = np.random.randn(output_dim)
         if spectral_mean is None:
-            spectral_mean = np.ones([input_dim, groups])
+            spectral_mean = np.ones([input_dim, output_dim])
         if spectral_variance is None:
-            spectral_variance = np.ones([input_dim, groups])
+            spectral_variance = np.ones([input_dim, output_dim])
         if spectral_delay is None:
-            spectral_delay = np.zeros([input_dim, groups])
+            spectral_delay = np.zeros([input_dim, output_dim])
         if spectral_phase is None:
-            spectral_phase = np.zeros(groups)
+            spectral_phase = np.zeros(output_dim)
             
         
-        MultiKern.__init__(self, input_dim, groups, active_dims)
+        MultiKern.__init__(self, input_dim, output_dim, active_dims)
         self.constant = Parameter(spectral_constant)
         self.mean = Parameter(spectral_mean)
         self.variance = Parameter(spectral_variance, transforms.positive)
-        self.delay = Parameter(spectral_delay, FixDelay(input_dim, groups))
+        self.delay = Parameter(spectral_delay, FixDelay(input_dim, output_dim))
         self.phase = Parameter(spectral_phase, FixPhase())
-        self.kerns = [[self._kernel_factory(i,j) for j in range(groups)] for i in range(groups)]
+        self.kerns = [[self._kernel_factory(i,j) for j in range(output_dim)] for i in range(output_dim)]
                     
     def subK(self, index, X, X2 = None):
         i, j = index
