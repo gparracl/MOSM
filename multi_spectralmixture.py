@@ -66,13 +66,14 @@ class MultiSpectralMixture(MultiKern):
         else:
             def cov_function(X, X2): 
                 sv = self.variance[:,i] + self.variance[:,j]
-                df = tf.reshape(self.delay[:,i] - self.delay[:,j], [self.input_dim, 1, 1])
-                dp = self.phase[i] - self.phase[j]
+                cross_delay = tf.reshape(self.delay[:,i] - self.delay[:,j], [self.input_dim, 1, 1])
+                cross_phase = self.phase[i] - self.phase[j]
                 cross_var = (2 * self.variance[:,i] * self.variance[:,j]) / sv
                 cross_mean = tf.reshape((self.variance[:,i] * self.mean[:,j] + self.variance[:,j] * self.mean[:,i]) / sv, [self.input_dim, 1, 1])
-                c_ij = np.power(2*np.pi, self.input_dim / 2) * tf.exp(-0.25*rsum(tf.square(self.mean[:,i] - self.mean[:,j]) / sv))
+                cross_magnitude = self.constant[i] * self.constant[j] * tf.exp(-0.25*rsum(tf.square(self.mean[:,i] - self.mean[:,j]) / sv))
+                alpha = np.power(2*np.pi, self.input_dim / 2) * tf.sqrt(rprod(cross_var)) * cross_magnitude
                 
-                return c_ij * tf.sqrt(rprod(cross_var)) * self.constant[i] * self.constant[j] * tf.exp(-0.5*self.sqdist(X + self.delay[:,i], X2 + self.delay[:,j], cross_var)) * tf.cos(rsum(cross_mean * (self.dist(X, X2) + df), axis = 0) + dp)
+                return alpha * tf.exp(-0.5*self.sqdist(X + self.delay[:,i], X2 + self.delay[:,j], cross_var)) * tf.cos(rsum(cross_mean * (self.dist(X, X2) + cross_delay), axis = 0) + cross_phase)
         return cov_function
     
     def sqdist(self, X, X2, lscales):
