@@ -1,4 +1,4 @@
-# This is a simplification of the work done by Rasmus Bonnevie on issue #328, credits to him.
+# This is a simplification and adaptation to gpflow 1.0 of the work done by Rasmus Bonnevie on issue #328, credits to him.
 
 import numpy as np
 import tensorflow as tf
