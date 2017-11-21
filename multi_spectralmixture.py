@@ -7,12 +7,12 @@ from gpflow.params import Parameter
 from gpflow import transforms
 from fixphase import FixPhase
 from fixdelay import FixDelay
-from multikernel import BlockKernel
+from multikernel_test import MultiKern
 
 #from gpflow._settings import settings
 #float_type = settings.dtypes.float_type
    
-class MultiSpectralMixture(BlockKernel):
+class MultiSpectralMixture(MultiKern):
     def __init__(self, input_dim, groups, 
                  spectral_constant = None, spectral_mean = None, 
                  spectral_variance = None, spectral_delay = None, 
@@ -39,14 +39,12 @@ class MultiSpectralMixture(BlockKernel):
             spectral_phase = np.zeros(groups)
             
         
-        BlockKernel.__init__(self, input_dim, groups, active_dims)
+        MultiKern.__init__(self, input_dim, groups, active_dims)
         self.constant = Parameter(spectral_constant)
         self.mean = Parameter(spectral_mean)
         self.variance = Parameter(spectral_variance, transforms.positive)
-        test = np.array([[0,0],[1,0],[2,0]])
-        #, FixPartial(np.array([i * groups for i in range(input_dim)]), np.zeros(input_dim))
         self.delay = Parameter(spectral_delay, FixDelay(input_dim, groups))
-        self.phase = Parameter(spectral_phase, FixPhase(input_dim, groups))
+        self.phase = Parameter(spectral_phase, FixPhase())
         self.kerns = [[self._kernel_factory(i,j) for j in range(groups)] for i in range(groups)]
                     
     def subK(self, index, X, X2 = None):

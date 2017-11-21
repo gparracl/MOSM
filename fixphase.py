@@ -3,7 +3,7 @@ import tensorflow as tf
 import gpflow
 
 class FixPhase(gpflow.transforms.Transform):
-    def __init__(self, fixed_inds, fixed_vals):
+    def __init__(self):
         gpflow.transforms.Transform.__init__(self)
         self.fixed_inds = np.array([0])
         self.fixed_vals = np.zeros([1])
